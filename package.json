@@ -9,6 +9,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "hummus": "^1.0.115"
+    "pdf-lib": "^1.17.1"
   }
 }
