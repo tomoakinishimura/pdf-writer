@@ -1,6 +1,7 @@
 import { ensureDir } from 'https://deno.land/std/fs/mod.ts';
 import { join, extname } from 'https://deno.land/std/path/mod.ts';
-import { PDFDocument, StandardFonts, rgb } from 'https://cdn.pika.dev/pdf-lib@^1.7.0';
+import { PDFDocument, rgb } from 'https://cdn.pika.dev/pdf-lib@^1.7.0';
+import fontkit from '@pdf-lib/fontkit';
 import { parse } from 'https://deno.land/std/flags/mod.ts';
 
 const parsedArgs = parse(Deno.args);
@@ -52,8 +53,11 @@ async function processFilesInFolder(inputFolderPath: string, outputFolderPath: s
 
             // PDFDocumentオブジェクトを作成
             const pdfDoc = await PDFDocument.load(pdfBytes);
-            const font = isBold ? await pdfDoc.embedFont(StandardFonts.TimesRomanBold) :
-                await pdfDoc.embedFont(StandardFonts.TimesRoman);
+            pdfDoc.registerFontkit(fontkit)
+            const fontBytes = await Deno.readFile('./Meiryo-01.ttf');
+            const fontBoldBytes = await Deno.readFile('./Meiryo-Bold-01.ttf');
+            const font = isBold ? await pdfDoc.embedFont(fontBoldBytes, { subset: true }) :
+                await pdfDoc.embedFont(fontBytes, { subset: true });
 
             const pageCount = pdfDoc.getPageCount();
             for (let pageIndex = 0; pageIndex < pageCount; pageIndex++) {
@@ -61,7 +65,7 @@ async function processFilesInFolder(inputFolderPath: string, outputFolderPath: s
                 // ページの幅と高さを取得
                 const { width: pageWidth, height: pageHeight } = page.getSize();
 
-                const fileName = file.name.split('_')[0]; // ファイル名から最初の数字を取得
+                const fileName = file.name.split('_')[0].replace('№', '伝票番号'); // ファイル名から最初の数字を取得
                 const textWidth = font.widthOfTextAtSize(fileName, fontSize);
                 const textHeight = font.heightAtSize(fontSize);
 
