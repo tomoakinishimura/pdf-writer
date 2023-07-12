@@ -6,6 +6,7 @@ import { parse } from 'https://deno.land/std/flags/mod.ts';
 const parsedArgs = parse(Deno.args);
 const inputFolderPath = parsedArgs.input;
 const outputFolderPath = parsedArgs.output;
+const isBold = parsedArgs.isBold;
 const fontSize = parsedArgs.size ?? 12;
 const colorRGB = parsedArgs.color ? parsedArgs.color.split(',').map(Number).map(val => val / 255) : [0, 0, 0];
 const x = parsedArgs.x ?? 5;
@@ -18,6 +19,7 @@ Options:
   --input <inputFolderPath>    Specify the input folder path.
   --output <outputFolderPath>  Specify the output folder path.
   --size <fontSize>            Specify the font size. (default: 12)
+  --isBold <boolean>           Specify the true to be bold. (default: false)
   --color <R,G,B>              Specify the text color in RGB format. (default: 0,0,0)
   --x <xCoordinate>            Specify the x-coordinate. (default: 5)
   --y <yCoordinate>            Specify the y-coordinate. (default: 5)
@@ -50,7 +52,8 @@ async function processFilesInFolder(inputFolderPath: string, outputFolderPath: s
 
             // PDFDocumentオブジェクトを作成
             const pdfDoc = await PDFDocument.load(pdfBytes);
-            const font = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+            const font = isBold ? await pdfDoc.embedFont(StandardFonts.TimesRomanBold) :
+                await pdfDoc.embedFont(StandardFonts.TimesRoman);
 
             const pageCount = pdfDoc.getPageCount();
             for (let pageIndex = 0; pageIndex < pageCount; pageIndex++) {
