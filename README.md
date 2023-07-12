@@ -1,11 +1,12 @@
 # pdf-writer
 
-指定フォルダを再起的にPDFファイルの書き換えを行います
-Windowsコマンドプロンプトにてダウンロードした指定execファイルを実行してください
+- 指定フォルダを再起的にPDFファイルの書き換えを行います
+- DLはこちらから最新版を https://github.com/tomoakinishimura/pdf-writer/releases
+- Windowsコマンドプロンプトにてダウンロードした指定execファイルを実行してください
 ```shell
 C> ./pdw-writer.exe --input フォルダ --output フォルダ
 ```
-他下記方法のオプションが利用できます
+- 他下記方法のオプションが利用できます
 
 ```shell
 Usage: ./pdf-writer [options]
