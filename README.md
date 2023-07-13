@@ -31,5 +31,5 @@ Options:
 deno compile --unstable --allow-read --allow-write --no-check --node-modules-dir pdf-writer.ts
 
 # for windows
-deno compile --unstable --allow-read --allow-write --no-check --node-modules-dir --target x86_64-pc-windows-msvc  pdf-writer.ts
+deno compile --unstable --allow-read --allow-write --allow-net --no-check --node-modules-dir --target x86_64-pc-windows-msvc  pdf-writer.ts
 ```
