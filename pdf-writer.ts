@@ -34,6 +34,11 @@ if (!inputFolderPath || !outputFolderPath) {
     Deno.exit(1);
 }
 
+const responseMeiryo = await fetch("https://github.com/tomoakinishimura/pdf-writer/raw/main/Meiryo-01.ttf");
+const meiryoRegularBuffer = new Uint8Array(await responseMeiryo.arrayBuffer());
+const responseMeiryoBold = await fetch("https://github.com/tomoakinishimura/pdf-writer/raw/main/Meiryo-Bold-01.ttf");
+const meiryoBoldBuffer = new Uint8Array(await responseMeiryoBold.arrayBuffer());
+
 // フォルダ内のファイルを再帰的に処理する関数
 async function processFilesInFolder(inputFolderPath: string, outputFolderPath: string) {
     const files = await Deno.readDir(inputFolderPath);
@@ -54,10 +59,8 @@ async function processFilesInFolder(inputFolderPath: string, outputFolderPath: s
             // PDFDocumentオブジェクトを作成
             const pdfDoc = await PDFDocument.load(pdfBytes);
             pdfDoc.registerFontkit(fontkit)
-            const fontBytes = await Deno.readFile('./Meiryo-01.ttf');
-            const fontBoldBytes = await Deno.readFile('./Meiryo-Bold-01.ttf');
-            const font = isBold ? await pdfDoc.embedFont(fontBoldBytes, { subset: true }) :
-                await pdfDoc.embedFont(fontBytes, { subset: true });
+            const font = isBold ? await pdfDoc.embedFont(meiryoRegularBuffer, { subset: true }) :
+                await pdfDoc.embedFont(meiryoBoldBuffer, { subset: true });
 
             const pageCount = pdfDoc.getPageCount();
             for (let pageIndex = 0; pageIndex < pageCount; pageIndex++) {
