@@ -43,7 +43,9 @@ const fontPaths = [
     { regular: join(executableDir, "Meiryo-01.ttf"), bold: join(executableDir, "Meiryo-Bold-01.ttf") },
     // カレントディレクトリ
     { regular: "./Meiryo-01.ttf", bold: "./Meiryo-Bold-01.ttf" },
-    // 絶対パス（Windowsの場合）
+    // Windowsのシステムフォント（.ttfファイル）
+    { regular: "C:\\Windows\\Fonts\\meiryo.ttf", bold: "C:\\Windows\\Fonts\\meiryo.ttf" },
+    // Windowsのシステムフォント（.ttcファイル）
     { regular: "C:\\Windows\\Fonts\\meiryo.ttc", bold: "C:\\Windows\\Fonts\\meiryo.ttc" }
 ];
 
@@ -51,11 +53,13 @@ const fontPaths = [
 let meiryoRegularBuffer: Uint8Array;
 let meiryoBoldBuffer: Uint8Array;
 let fontsLoaded = false;
+let fontSource = "";
 
 for (const fontPath of fontPaths) {
     try {
         meiryoRegularBuffer = await Deno.readFile(fontPath.regular);
         meiryoBoldBuffer = await Deno.readFile(fontPath.bold);
+        fontSource = fontPath.regular;
         console.log(`Fonts loaded successfully from: ${fontPath.regular}`);
         fontsLoaded = true;
         break;
@@ -76,6 +80,9 @@ if (!fontsLoaded) {
     console.error('3. Use --help for more information');
     Deno.exit(1);
 }
+
+// フォントの種類に応じてサブセット設定を動的に調整
+const shouldUseSubset = !fontSource.includes('.ttc') && !fontSource.includes('meiryo.ttc');
 
 // フォルダ内のファイルを再帰的に処理する関数
 async function processFilesInFolder(inputPath: string, outputFolderPath: string) {
@@ -123,8 +130,10 @@ async function processSinglePdfFile(inputFilePath: string, outputFilePath: strin
     // PDFDocumentオブジェクトを作成
     const pdfDoc = await PDFDocument.load(pdfBytes);
     pdfDoc.registerFontkit(fontkit)
-    const font = isBold ? await pdfDoc.embedFont(meiryoBoldBuffer, { subset: true }) :
-        await pdfDoc.embedFont(meiryoRegularBuffer, { subset: true });
+    
+    // フォントの種類に応じてサブセット設定を調整
+    const font = isBold ? await pdfDoc.embedFont(meiryoBoldBuffer, { subset: shouldUseSubset }) :
+        await pdfDoc.embedFont(meiryoRegularBuffer, { subset: shouldUseSubset });
 
     const pageCount = pdfDoc.getPageCount();
     for (let pageIndex = 0; pageIndex < pageCount; pageIndex++) {
