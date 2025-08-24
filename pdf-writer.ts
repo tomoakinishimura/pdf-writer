@@ -1,11 +1,12 @@
 import { ensureDir } from 'https://deno.land/std/fs/mod.ts';
-import { join, extname, dirname, fromFileUrl } from 'https://deno.land/std/path/mod.ts';
+import { join, extname } from 'https://deno.land/std/path/mod.ts';
 import { PDFDocument, rgb } from 'https://cdn.pika.dev/pdf-lib@^1.7.0';
 import fontkit from '@pdf-lib/fontkit';
 import { parse } from 'https://deno.land/std/flags/mod.ts';
 
-// 実行可能ファイルの場所を取得
-const executableDir = dirname(fromFileUrl(import.meta.url));
+// 現在の作業ディレクトリを使用（シンプルで確実）
+const executableDir = Deno.cwd();
+console.log(`Current working directory: ${executableDir}`);
 
 const parsedArgs = parse(Deno.args);
 const inputFolderPath = parsedArgs.input;
@@ -37,16 +38,12 @@ if (!inputFolderPath || !outputFolderPath) {
     Deno.exit(1);
 }
 
-// フォントファイルのパスを設定（複数の候補を試行）
+// フォントファイルのパスを設定（シンプルで確実）
 const fontPaths = [
-    // 実行可能ファイルと同じディレクトリ
-    { regular: join(executableDir, "Meiryo-01.ttf"), bold: join(executableDir, "Meiryo-Bold-01.ttf") },
-    // カレントディレクトリ
+    // カレントディレクトリ（最も確実）
     { regular: "./Meiryo-01.ttf", bold: "./Meiryo-Bold-01.ttf" },
-    // Windowsのシステムフォント（.ttfファイル）
-    { regular: "C:\\Windows\\Fonts\\meiryo.ttf", bold: "C:\\Windows\\Fonts\\meiryo.ttf" },
-    // Windowsのシステムフォント（.ttcファイル）
-    { regular: "C:\\Windows\\Fonts\\meiryo.ttc", bold: "C:\\Windows\\Fonts\\meiryo.ttc" }
+    // 実行可能ファイルと同じディレクトリ
+    { regular: join(executableDir, "Meiryo-01.ttf"), bold: join(executableDir, "Meiryo-Bold-01.ttf") }
 ];
 
 // フォントファイルを読み込む
@@ -81,8 +78,7 @@ if (!fontsLoaded) {
     Deno.exit(1);
 }
 
-// フォントの種類に応じてサブセット設定を動的に調整
-const shouldUseSubset = !fontSource.includes('.ttc') && !fontSource.includes('meiryo.ttc');
+// サブセット設定を簡素化（ローカルフォントファイルは常にサブセット作成可能）
 
 // フォルダ内のファイルを再帰的に処理する関数
 async function processFilesInFolder(inputPath: string, outputFolderPath: string) {
@@ -131,9 +127,9 @@ async function processSinglePdfFile(inputFilePath: string, outputFilePath: strin
     const pdfDoc = await PDFDocument.load(pdfBytes);
     pdfDoc.registerFontkit(fontkit)
     
-    // フォントの種類に応じてサブセット設定を調整
-    const font = isBold ? await pdfDoc.embedFont(meiryoBoldBuffer, { subset: shouldUseSubset }) :
-        await pdfDoc.embedFont(meiryoRegularBuffer, { subset: shouldUseSubset });
+    // フォントを埋め込み（サブセット作成を有効化）
+    const font = isBold ? await pdfDoc.embedFont(meiryoBoldBuffer, { subset: true }) :
+        await pdfDoc.embedFont(meiryoRegularBuffer, { subset: true });
 
     const pageCount = pdfDoc.getPageCount();
     for (let pageIndex = 0; pageIndex < pageCount; pageIndex++) {
