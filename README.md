@@ -28,8 +28,8 @@ Options:
 
 ```shell
 # for mac
-deno compile --unstable --allow-read --allow-write --no-check --node-modules-dir pdf-writer.ts
+deno compile --allow-read --allow-write --allow-import --no-check --node-modules-dir pdf-writer.ts
 
 # for windows
-deno compile --unstable --allow-read --allow-write --allow-net --no-check --node-modules-dir --target x86_64-pc-windows-msvc  pdf-writer.ts
+deno compile --allow-read --allow-write --allow-import --allow-net --no-check --node-modules-dir --target x86_64-pc-windows-msvc  pdf-writer.ts
 ```
